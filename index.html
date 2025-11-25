@@ -1,55 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>For Submission of Data to Google Sheet</title>
+  <meta charset="UTF-8">
+  <title>Employee Data Entry</title>
 </head>
 <body>
-    <h2>Save Info</h2>
+  <h2>Employee Data Entry Form</h2>
 
-    <form id="dataForm">
-        <label>Name:</label><br>
-        <input type="text" id="name" required><br><br>
+  <form id="entryForm">
+    <label>Employee ID:</label><br>
+    <input type="text" id="employeeId" required><br><br>
 
-        <label>Father:</label><br>
-        <input type="text" id="Father" required><br><br>
+    <label>Employee Name:</label><br>
+    <input type="text" id="employeeName" required><br><br>
 
-        <label>City:</label><br>
-        <textarea id="city" required></textarea><br><br>
+    <label>Father Name:</label><br>
+    <input type="text" id="fatherName"><br><br>
 
-        <label>Mobile:</label><br>
-        <input type="text" id="mobile" required><br><br>
+    <label>Address:</label><br>
+    <input type="text" id="address"><br><br>
 
-        <button type="submit">Submit</button>
-    </form>
+    <label>City:</label><br>
+    <input type="text" id="city"><br><br>
 
-    <p id="msg"></p>
+    <label>Mobile:</label><br>
+    <input type="text" id="mobile"><br><br>
 
-    <script>
-        const scriptURL = "https://script.google.com/macros/s/AKfycbyoAyHoRsvYDKPsRMVnVQcpwCv1pIyjOBGaoSL-otdfic-wW1wfEcN9Q8ttgvO4bDXq/exec";
+    <label>Email:</label><br>
+    <input type="email" id="email"><br><br>
 
-        document.getElementById("dataForm").addEventListener("submit", function(e){
-            e.preventDefault();
+    <label>Date of Birth (DOB):</label><br>
+    <input type="date" id="dob"><br><br>
 
-            let payload = {
-                name: document.getElementById("name").value,
-                Father: document.getElementById("Father").value,
-                city: document.getElementById("city").value,
-                mobile: document.getElementById("mobile").value
-            };
+    <label>Date of Joining (DOJ):</label><br>
+    <input type="date" id="doj"><br><br>
 
-            fetch(scriptURL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(response => {
-                document.getElementById("msg").innerText = "Submitted Successfully ✔️";
-                document.getElementById("dataForm").reset();
-            })
-            .catch(err => {
-                document.getElementById("msg").innerText = "Error submitting ❌";
-            });
-        });
-    </script>
+    <label>PAN:</label><br>
+    <input type="text" id="pan"><br><br>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    document.getElementById("entryForm").addEventListener("submit", function(e){
+      e.preventDefault();
+
+      const data = {
+        employeeId: document.getElementById("employeeId").value,
+        employeeName: document.getElementById("employeeName").value,
+        fatherName: document.getElementById("fatherName").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        mobile: document.getElementById("mobile").value,
+        email: document.getElementById("email").value,
+        dob: document.getElementById("dob").value,
+        doj: document.getElementById("doj").value,
+        pan: document.getElementById("pan").value,
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbzUDfumvE3MKktrRtKWA9OiQB6MIYlgDpY8oQlT8lxZdUKbA0qa0LrSKKmLgeTkN4wF/exec", {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(data)
+      });
+
+      document.getElementById("status").innerText = "Data submitted successfully!";
+      document.getElementById("entryForm").reset();
+    });
+  </script>
 </body>
 </html>
