@@ -23,13 +23,15 @@
       const dwp = document.getElementById("dwp").value;
 
       const url =
-        "https://script.google.com/macros/s/AKfycbyxggZNFijmmxROyjHKbaxg2elLTmULVSYDxCkK2_rfkT93IO27Kfthp_WMDKNedQOz/exec" +
+        "https://script.google.com/macros/s/AKfycbz8Ycgoaz4PvjXtfnKAx_NgqtnfavXvaKBh_ToxTBND9y5utpy_7Fsqj58CWb2rnG89/exec" +
         "?action=login&employeeId=" + empId + "&dwp=" + dwp;
 
       fetch(url)
         .then(res => res.json())
         .then(data => {
-          if (data.status === "success") {
+
+          // ✔ FIXED CONDITION
+          if (data.success === true) {
             localStorage.setItem("employeeId", empId);
             window.location.href = "update.html";
           } else {
