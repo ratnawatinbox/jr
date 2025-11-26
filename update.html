@@ -6,26 +6,32 @@
 
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       padding: 20px;
     }
     input {
-      width: 250px;
+      width: 260px;
       padding: 6px;
+      margin-bottom: 6px;
     }
     button {
       padding: 8px 15px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
     #loginBtn {
       background: #007bff;
       color: white;
       border: none;
       display: none;
+      margin-left: 8px;
     }
     #updateBtn:disabled {
       background: gray;
       cursor: not-allowed;
+    }
+    #status {
+      margin-top: 12px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -37,34 +43,37 @@
   <form id="updateForm">
 
     Employee ID (Locked):<br>
-    <input type="text" id="employeeId" readonly><br><br>
+    <input type="text" id="employeeId" name="employeeId" readonly><br>
 
     Name:<br>
-    <input type="text" id="employeeName"><br><br>
+    <input type="text" id="employeeName" name="employeeName"><br>
 
     Father's Name:<br>
-    <input type="text" id="fatherName"><br><br>
+    <input type="text" id="fatherName" name="fatherName"><br>
 
     Address:<br>
-    <input type="text" id="address"><br><br>
+    <input type="text" id="address" name="address"><br>
 
     City:<br>
-    <input type="text" id="city"><br><br>
+    <input type="text" id="city" name="city"><br>
 
     Mobile:<br>
-    <input type="text" id="mobile"><br><br>
+    <input type="text" id="mobile" name="mobile"><br>
 
     Email:<br>
-    <input type="email" id="email"><br><br>
+    <input type="email" id="email" name="email"><br>
 
     Date of Birth:<br>
-    <input type="date" id="dob"><br><br>
+    <input type="date" id="dob" name="dob"><br>
 
     Date of Joining:<br>
-    <input type="date" id="doj"><br><br>
+    <input type="date" id="doj" name="doj"><br>
 
     PAN:<br>
-    <input type="text" id="pan"><br><br>
+    <input type="text" id="pan" name="pan"><br>
+
+    DWP (Password):<br>
+    <input type="text" id="dwp" name="dwp"><br>
 
     <button type="button" id="updateBtn" onclick="updateData()">Update</button>
     <button type="button" id="loginBtn" onclick="goToLogin()">Login</button>
@@ -74,60 +83,96 @@
   <p id="status"></p>
 
   <script>
+    // <-- Put your web app URL here (same as your Apps Script deployment) -->
     const scriptURL = "https://script.google.com/macros/s/AKfycbyvZKfnHtuohINwsyWuHw4-DszHZ5jWjV8WokVblgdl76VwX6Hj2XqAkIKuW3u4GFP-/exec";
 
-    // Load employee data automatically
+    // Auto-load employee data on page load
     window.onload = function () {
       const empId = localStorage.getItem("employeeId");
       if (!empId) {
         document.getElementById("status").innerText = "No login session found.";
+        // hide update button because no session
+        document.getElementById("updateBtn").disabled = true;
+        document.getElementById("loginBtn").style.display = "inline-block";
         return;
       }
 
-      fetch(scriptURL + "?action=getEmployee&employeeId=" + empId)
+      // fetch employee record
+      fetch(scriptURL + "?action=getEmployee&employeeId=" + encodeURIComponent(empId))
         .then(res => res.json())
         .then(data => {
+          // data is expected to be an object with keys matching header names
+          // fill only inputs that exist on page
           Object.keys(data).forEach(key => {
-            if (document.getElementById(key)) {
-              document.getElementById(key).value = data[key] || "";
-            }
+            const el = document.getElementById(key);
+            if (el) el.value = data[key] || "";
           });
+        })
+        .catch(err => {
+          console.error("Error fetching employee:", err);
+          document.getElementById("status").innerText = "Error loading data.";
         });
     };
 
-    // Update employee data
+    // Build query string and call updateEmployee
     function updateData() {
-      let form = document.getElementById("updateForm");
-      let formData = new FormData(form);
+      // disable button immediately to prevent double-clicks
+      const updateBtn = document.getElementById("updateBtn");
+      updateBtn.disabled = true;
+      document.getElementById("status").innerText = "Updating...";
 
+      const form = document.getElementById("updateForm");
+      const formData = new FormData(form);
+
+      // Ensure employeeId present
+      const empId = formData.get("employeeId");
+      if (!empId) {
+        document.getElementById("status").innerText = "No employeeId found in session.";
+        updateBtn.disabled = false;
+        return;
+      }
+
+      // build query (GET style) — keeps consistent with Apps Script doGet handlers
       let query = "?action=updateEmployee";
       formData.forEach((value, key) => {
-        query += "&" + key + "=" + encodeURIComponent(value);
+        // include even empty strings (Apps Script will handle)
+        query += "&" + encodeURIComponent(key) + "=" + encodeURIComponent(value || "");
       });
 
       fetch(scriptURL + query)
         .then(res => res.json())
-        .then(data => {
-          if (data.success) {
+        .then(result => {
+          if (result && result.success) {
             document.getElementById("status").innerText = "Updated successfully!";
 
-            // Disable update button
-            document.getElementById("updateBtn").disabled = true;
+            // Disable update button permanently (until next login)
+            updateBtn.disabled = true;
 
-            // Show login button
-            document.getElementById("loginBtn").style.display = "inline-block";
-
-            // Clear login session
+            // Show login button and clear session so user must re-login
+            const loginBtn = document.getElementById("loginBtn");
+            loginBtn.style.display = "inline-block";
             localStorage.removeItem("employeeId");
+
+            // Optionally lock fields (uncomment if you want to prevent edits)
+            // document.querySelectorAll('#updateForm input').forEach(i => i.readOnly = true);
           } else {
+            console.warn("Update failed response:", result);
             document.getElementById("status").innerText = "Update failed!";
+            // re-enable update button so user can retry
+            updateBtn.disabled = false;
           }
+        })
+        .catch(err => {
+          console.error("Update error:", err);
+          document.getElementById("status").innerText = "Update failed!";
+          document.getElementById("updateBtn").disabled = false;
         });
     }
 
-    // Go to login page
+    // Redirect to login page (clear session already done after update)
     function goToLogin() {
-      window.location.href = "index.html"; // Change if your login file name is different
+      // change to your login page filename if different (login.html or index.html)
+      window.location.href = "login.html";
     }
   </script>
 
