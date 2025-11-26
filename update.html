@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Update Employee Info</title>
+</head>
+<body>
+  <h2>Update Your Information</h2>
+
+  <form id="updateForm">
+    <label>Name:</label><br>
+    <input type="text" id="employeeName"><br><br>
+
+    <label>Father Name:</label><br>
+    <input type="text" id="fatherName"><br><br>
+
+    <label>Address:</label><br>
+    <input type="text" id="address"><br><br>
+
+    <label>City:</label><br>
+    <input type="text" id="city"><br><br>
+
+    <label>Mobile:</label><br>
+    <input type="text" id="mobile"><br><br>
+
+    <label>Email:</label><br>
+    <input type="text" id="email"><br><br>
+
+    <button type="submit">Update</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    const empId = localStorage.getItem("employeeId");
+
+    if (!empId) {
+      window.location.href = "login.html";
+    }
+
+    // Load user data
+    fetch("https://script.google.com/macros/s/AKfycbzUDfumvE3MKktrRtKWA9OiQB6MIYlgDpY8oQlT8lxZdUKbA0qa0LrSKKmLgeTkN4wF/exec?employeeId=" + empId)
+      .then(res => res.json())
+      .then(data => {
+        data = data[0];
+        document.getElementById("employeeName").value = data.employeeName;
+        document.getElementById("fatherName").value = data.fatherName;
+        document.getElementById("address").value = data.address;
+        document.getElementById("city").value = data.city;
+        document.getElementById("mobile").value = data.mobile;
+        document.getElementById("email").value = data.email;
+      });
+
+    // Update data
+    document.getElementById("updateForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const updated = {
+        employeeId: empId,
+        employeeName: document.getElementById("employeeName").value,
+        fatherName: document.getElementById("fatherName").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        mobile: document.getElementById("mobile").value,
+        email: document.getElementById("email").value
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbzUDfumvE3MKktrRtKWA9OiQB6MIYlgDpY8oQlT8lxZdUKbA0qa0LrSKKmLgeTkN4wF/exec", {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(updated)
+      });
+
+      document.getElementById("status").innerText = "Profile updated!";
+    });
+
+  </script>
+
+</body>
+</html>
