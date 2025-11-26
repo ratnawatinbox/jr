@@ -10,34 +10,37 @@
   <form id="updateForm">
 
     Employee ID (Locked):<br>
-    <input type="text" id="employeeId" readonly><br><br>
+    <input type="text" id="employeeId" name="employeeId" readonly><br><br>
 
     Name:<br>
-    <input type="text" id="employeeName"><br><br>
+    <input type="text" id="employeeName" name="employeeName"><br><br>
 
     Father's Name:<br>
-    <input type="text" id="fatherName"><br><br>
+    <input type="text" id="fatherName" name="fatherName"><br><br>
 
     Address:<br>
-    <input type="text" id="address"><br><br>
+    <input type="text" id="address" name="address"><br><br>
 
     City:<br>
-    <input type="text" id="city"><br><br>
+    <input type="text" id="city" name="city"><br><br>
 
     Mobile:<br>
-    <input type="text" id="mobile"><br><br>
+    <input type="text" id="mobile" name="mobile"><br><br>
 
     Email:<br>
-    <input type="email" id="email"><br><br>
+    <input type="email" id="email" name="email"><br><br>
 
     Date of Birth:<br>
-    <input type="date" id="dob"><br><br>
+    <input type="date" id="dob" name="dob"><br><br>
 
     Date of Joining:<br>
-    <input type="date" id="doj"><br><br>
+    <input type="date" id="doj" name="doj"><br><br>
 
     PAN:<br>
-    <input type="text" id="pan"><br><br>
+    <input type="text" id="pan" name="pan"><br><br>
+
+    DWP (Password):<br>
+    <input type="text" id="dwp" name="dwp"><br><br>
 
     <button type="button" onclick="updateData()">Update</button>
   </form>
@@ -47,9 +50,10 @@
   <script>
     const scriptURL = "https://script.google.com/macros/s/AKfycbyvZKfnHtuohINwsyWuHw4-DszHZ5jWjV8WokVblgdl76VwX6Hj2XqAkIKuW3u4GFP-/exec";
 
-    // Load employee data automatically
+    // Auto-load employee data
     window.onload = function () {
       const empId = localStorage.getItem("employeeId");
+
       if (!empId) {
         document.getElementById("status").innerText = "No login session found.";
         return;
@@ -58,20 +62,15 @@
       fetch(scriptURL + "?action=getEmployee&employeeId=" + empId)
         .then(res => res.json())
         .then(data => {
-          document.getElementById("employeeId").value = data.employeeId || "";
-          document.getElementById("employeeName").value = data.employeeName || "";
-          document.getElementById("fatherName").value = data.fatherName || "";
-          document.getElementById("address").value = data.address || "";
-          document.getElementById("city").value = data.city || "";
-          document.getElementById("mobile").value = data.mobile || "";
-          document.getElementById("email").value = data.email || "";
-          document.getElementById("dob").value = data.dob || "";
-          document.getElementById("doj").value = data.doj || "";
-          document.getElementById("pan").value = data.pan || "";
+          Object.keys(data).forEach(key => {
+            if (document.getElementById(key)) {
+              document.getElementById(key).value = data[key] || "";
+            }
+          });
         });
     };
 
-    // Update employee data
+    // Update data
     function updateData() {
       let form = document.getElementById("updateForm");
       let formData = new FormData(form);
@@ -84,11 +83,8 @@
       fetch(scriptURL + query)
         .then(res => res.json())
         .then(data => {
-          if (data.success) {
-            document.getElementById("status").innerText = "Updated successfully!";
-          } else {
-            document.getElementById("status").innerText = "Update failed!";
-          }
+          document.getElementById("status").innerText =
+            data.success ? "Updated successfully!" : "Update failed!";
         });
     }
   </script>
