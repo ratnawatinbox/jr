@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Employee Login</title>
+</head>
+<body>
+  <h2>Employee Login</h2>
+
+  <label>Employee ID:</label><br>
+  <input type="text" id="employeeId" required><br><br>
+
+  <label>Password (DWP):</label><br>
+  <input type="password" id="dwp" required><br><br>
+
+  <button onclick="loginUser()">Login</button>
+
+  <p id="status"></p>
+
+  <script>
+    function loginUser() {
+      const empId = document.getElementById("employeeId").value;
+      const dwp = document.getElementById("dwp").value;
+
+      const url =
+        "https://script.google.com/macros/s/AKfycbwxpb84fUR9n65St7-3qo76U13jJ1620-qywWdXUhs/dev" +
+        "?action=login&employeeId=" + empId + "&dwp=" + dwp;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            localStorage.setItem("employeeId", empId);
+            window.location.href = "update.html";
+          } else {
+            document.getElementById("status").innerText = "Invalid Employee ID or Password.";
+          }
+        })
+        .catch(() => {
+          document.getElementById("status").innerText = "Error connecting to server.";
+        });
+    }
+  </script>
+
+</body>
+</html>
