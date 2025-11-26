@@ -2,78 +2,95 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Update Employee Info</title>
+  <title>Update Employee Details</title>
 </head>
 <body>
-  <h2>Update Your Information</h2>
+  <h2>Update Your Details</h2>
 
   <form id="updateForm">
-    <label>Name:</label><br>
+
+    Employee ID (Locked):<br>
+    <input type="text" id="employeeId" readonly><br><br>
+
+    Name:<br>
     <input type="text" id="employeeName"><br><br>
 
-    <label>Father Name:</label><br>
+    Father's Name:<br>
     <input type="text" id="fatherName"><br><br>
 
-    <label>Address:</label><br>
+    Address:<br>
     <input type="text" id="address"><br><br>
 
-    <label>City:</label><br>
+    City:<br>
     <input type="text" id="city"><br><br>
 
-    <label>Mobile:</label><br>
+    Mobile:<br>
     <input type="text" id="mobile"><br><br>
 
-    <label>Email:</label><br>
-    <input type="text" id="email"><br><br>
+    Email:<br>
+    <input type="email" id="email"><br><br>
 
-    <button type="submit">Update</button>
+    Date of Birth:<br>
+    <input type="date" id="dob"><br><br>
+
+    Date of Joining:<br>
+    <input type="date" id="doj"><br><br>
+
+    PAN:<br>
+    <input type="text" id="pan"><br><br>
+
+    <button type="button" onclick="updateData()">Update</button>
   </form>
 
   <p id="status"></p>
 
   <script>
-    const empId = localStorage.getItem("employeeId");
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyvZKfnHtuohINwsyWuHw4-DszHZ5jWjV8WokVblgdl76VwX6Hj2XqAkIKuW3u4GFP-/exec";
 
-    if (!empId) {
-      window.location.href = "login.html";
+    // Load employee data automatically
+    window.onload = function () {
+      const empId = localStorage.getItem("employeeId");
+      if (!empId) {
+        document.getElementById("status").innerText = "No login session found.";
+        return;
+      }
+
+      fetch(scriptURL + "?action=getEmployee&employeeId=" + empId)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("employeeId").value = data.employeeId || "";
+          document.getElementById("employeeName").value = data.employeeName || "";
+          document.getElementById("fatherName").value = data.fatherName || "";
+          document.getElementById("address").value = data.address || "";
+          document.getElementById("city").value = data.city || "";
+          document.getElementById("mobile").value = data.mobile || "";
+          document.getElementById("email").value = data.email || "";
+          document.getElementById("dob").value = data.dob || "";
+          document.getElementById("doj").value = data.doj || "";
+          document.getElementById("pan").value = data.pan || "";
+        });
+    };
+
+    // Update employee data
+    function updateData() {
+      let form = document.getElementById("updateForm");
+      let formData = new FormData(form);
+
+      let query = "?action=updateEmployee";
+      formData.forEach((value, key) => {
+        query += "&" + key + "=" + encodeURIComponent(value);
+      });
+
+      fetch(scriptURL + query)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById("status").innerText = "Updated successfully!";
+          } else {
+            document.getElementById("status").innerText = "Update failed!";
+          }
+        });
     }
-
-    // Load user data
-    fetch("https://script.google.com/macros/s/AKfycbzUDfumvE3MKktrRtKWA9OiQB6MIYlgDpY8oQlT8lxZdUKbA0qa0LrSKKmLgeTkN4wF/exec?employeeId=" + empId)
-      .then(res => res.json())
-      .then(data => {
-        data = data[0];
-        document.getElementById("employeeName").value = data.employeeName;
-        document.getElementById("fatherName").value = data.fatherName;
-        document.getElementById("address").value = data.address;
-        document.getElementById("city").value = data.city;
-        document.getElementById("mobile").value = data.mobile;
-        document.getElementById("email").value = data.email;
-      });
-
-    // Update data
-    document.getElementById("updateForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const updated = {
-        employeeId: empId,
-        employeeName: document.getElementById("employeeName").value,
-        fatherName: document.getElementById("fatherName").value,
-        address: document.getElementById("address").value,
-        city: document.getElementById("city").value,
-        mobile: document.getElementById("mobile").value,
-        email: document.getElementById("email").value
-      };
-
-      fetch("https://script.google.com/macros/s/AKfycbzUDfumvE3MKktrRtKWA9OiQB6MIYlgDpY8oQlT8lxZdUKbA0qa0LrSKKmLgeTkN4wF/exec", {
-        method: "POST",
-        mode: "no-cors",
-        body: JSON.stringify(updated)
-      });
-
-      document.getElementById("status").innerText = "Profile updated!";
-    });
-
   </script>
 
 </body>
